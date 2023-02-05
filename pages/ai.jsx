@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import Navigasi from '../components/Navigasi'
+import Footer from '../components/Footer'
 
 const AI = () => {
 
@@ -23,28 +24,29 @@ const AI = () => {
             { q: question, a: '' }
         ])
         setQuestion('')
+        aiChat.push({ q: question, a: ''})
+        const newIndex = aiChat.findIndex(element => element.q === question)
+        const reqQuestion = aiChat.length === 1 ? question : aiChat
         const reqChatai = await fetch('/api/ai', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ question })
+            body: JSON.stringify({ question: reqQuestion })
         })
         const resChatai = await reqChatai.json()
-        const answer = resChatai.data.a
+        if(resChatai.code !== 200) return alert(resChatai.message)
+        const answer = resChatai.data.a || 'Pesan tidak tersedia'
+        aiChat[newIndex] = { q: question, a: answer }
         setAiChat([
-            ...aiChat,
-            {
-                q: question,
-                a: answer
-            }
+            ...aiChat
         ])
     }
 
     return (
         <>
             <Navigasi/>
-            <div className='my-5 pt-5 pb-3 container'>
+            <div className='my-5 py-5 pb-3 container'>
                 <h1>Chat AI</h1>
                 <div className='mt-4 d-flex flex-column'>
                     {
@@ -77,6 +79,8 @@ const AI = () => {
                     <button className="btn btn-dark rounded-right px-3" type="button" id="button" onClick={e => handlerTanya(e)}>Tanya</button>
                 </div>
             </div>
+            <div className='my-5'>&nbsp;</div>
+            <Footer/>
         </>
     )
 }
